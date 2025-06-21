@@ -9,10 +9,17 @@ export interface User {
   }
 }
 
+export interface Company {
+  id: number
+  name: string
+  slug: string
+  token: string
+}
+
 export interface LoginCredentials {
   email: string
   password: string
-  company_slug?: string
+  company_token?: string
 }
 
 export interface RegisterCredentials {

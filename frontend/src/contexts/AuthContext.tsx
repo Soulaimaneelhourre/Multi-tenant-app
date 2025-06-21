@@ -1,9 +1,8 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { authService } from "@/services/authService"
-import type { User, LoginCredentials, RegisterCredentials } from "@/types/auth"
-import { useToast } from "@/hooks/use-toast"
+import { authService } from "../services/authService"
+import type { User, LoginCredentials, RegisterCredentials } from "../types/auth"
 
 interface AuthContextType {
   user: User | null
@@ -12,6 +11,7 @@ interface AuthContextType {
   login: (credentials: LoginCredentials) => Promise<void>
   register: (credentials: RegisterCredentials) => Promise<void>
   logout: () => void
+  error: string | null
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -19,7 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const { toast } = useToast()
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const initAuth = async () => {
@@ -42,19 +42,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (credentials: LoginCredentials) => {
     try {
       setIsLoading(true)
+      setError(null)
       const response = await authService.login(credentials)
       localStorage.setItem("auth_token", response.token)
       setUser(response.user)
-      toast({
-        title: "Welcome back!",
-        description: "You have been successfully logged in.",
-      })
     } catch (error: any) {
-      toast({
-        title: "Login failed",
-        description: error.message || "Invalid credentials",
-        variant: "destructive",
-      })
+      setError(error.response?.data?.message || "Login failed")
       throw error
     } finally {
       setIsLoading(false)
@@ -64,19 +57,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (credentials: RegisterCredentials) => {
     try {
       setIsLoading(true)
+      setError(null)
       const response = await authService.register(credentials)
       localStorage.setItem("auth_token", response.token)
       setUser(response.user)
-      toast({
-        title: "Account created!",
-        description: "Welcome to your new workspace.",
-      })
     } catch (error: any) {
-      toast({
-        title: "Registration failed",
-        description: error.message || "Failed to create account",
-        variant: "destructive",
-      })
+      setError(error.response?.data?.message || "Registration failed")
       throw error
     } finally {
       setIsLoading(false)
@@ -86,10 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     localStorage.removeItem("auth_token")
     setUser(null)
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
-    })
+    setError(null)
   }
 
   return (
@@ -101,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         logout,
+        error,
       }}
     >
       {children}
