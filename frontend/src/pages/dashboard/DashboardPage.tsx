@@ -1,63 +1,51 @@
 "use client"
 
 import { useState } from "react"
-import { useAuth } from "@/contexts/AuthContext"
-import { useNotes } from "@/hooks/useNotes"
-import { DashboardLayout } from "@/components/layout/DashboardLayout"
-import { NotesList } from "@/components/notes/NotesList"
-import { NoteDialog } from "@/components/notes/NoteDialog"
-import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
-import type { Note } from "@/types/note"
 
-export function DashboardPage() {
-  const { user } = useAuth()
-  const { notes, isLoading, createNote, updateNote, deleteNote } = useNotes()
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [editingNote, setEditingNote] = useState<Note | null>(null)
-
-  const handleCreateNote = () => {
-    setEditingNote(null)
-    setIsDialogOpen(true)
-  }
-
-  const handleEditNote = (note: Note) => {
-    setEditingNote(note)
-    setIsDialogOpen(true)
-  }
-
-  const handleSaveNote = async (data: { title: string; content: string }) => {
-    if (editingNote) {
-      await updateNote(editingNote.id, data)
-    } else {
-      await createNote(data)
-    }
-    setIsDialogOpen(false)
-    setEditingNote(null)
-  }
-
-  const handleDeleteNote = async (id: number) => {
-    await deleteNote(id)
-  }
+export default function DashboardPage() {
+  const [notes] = useState([
+    { id: 1, title: "Welcome Note", content: "Welcome to your notes app!", date: "2024-01-15" },
+    { id: 2, title: "Getting Started", content: "Here's how to use the app...", date: "2024-01-14" },
+  ])
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Welcome back, {user?.name}!</h1>
-            <p className="text-muted-foreground">Manage your notes for {user?.company.name}</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Notes Dashboard</h1>
+              <p className="text-gray-600">Manage your notes</p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">New Note</button>
+              <button onClick={() => (window.location.href = "/login")} className="text-gray-600 hover:text-gray-900">
+                Logout
+              </button>
+            </div>
           </div>
-          <Button onClick={handleCreateNote} className="gap-2">
-            <Plus className="h-4 w-4" />
-            New Note
-          </Button>
         </div>
+      </header>
 
-        <NotesList notes={notes} isLoading={isLoading} onEdit={handleEditNote} onDelete={handleDeleteNote} />
-
-        <NoteDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} note={editingNote} onSave={handleSaveNote} />
-      </div>
-    </DashboardLayout>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {notes.map((note) => (
+            <div key={note.id} className="bg-white p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">{note.title}</h3>
+              <p className="text-gray-600 mb-4">{note.content}</p>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">{note.date}</span>
+                <div className="space-x-2">
+                  <button className="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
+                  <button className="text-red-600 hover:text-red-800 text-sm">Delete</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </main>
+    </div>
   )
 }

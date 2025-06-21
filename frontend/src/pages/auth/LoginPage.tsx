@@ -1,144 +1,75 @@
-"use client"
+import type React from "react"
 
 import { useState } from "react"
-import { Link, Navigate } from "react-router-dom"
-import { useFormik } from "formik"
-import * as Yup from "yup"
-import { useAuth } from "@/contexts/AuthContext"
-import { useTenant } from "@/contexts/TenantContext"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, Building2, Mail, Lock } from "lucide-react"
+import { Link } from "react-router-dom"
 
-const validationSchema = Yup.object({
-  email: Yup.string().email("Invalid email address").required("Email is required"),
-  password: Yup.string().required("Password is required"),
-  company_slug: Yup.string().when([], {
-    is: () => !window.location.hostname.includes("."),
-    then: (schema) => schema.required("Company slug is required"),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-})
+export default function LoginPage() {
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
 
-export function LoginPage() {
-  const { login, isAuthenticated, isLoading } = useAuth()
-  const { tenantSlug } = useTenant()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const formik = useFormik({
-    initialValues: {
-      email: "",
-      password: "",
-      company_slug: tenantSlug || "",
-    },
-    validationSchema,
-    onSubmit: async (values) => {
-      try {
-        setIsSubmitting(true)
-        await login(values)
-      } catch (error) {
-        // Error handled in context
-      } finally {
-        setIsSubmitting(false)
-      }
-    },
-  })
-
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log("Login attempt:", { email, password })
+    // For now, just redirect to dashboard
+    window.location.href = "/dashboard"
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-4">
-            <div className="h-12 w-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-              <Building2 className="h-6 w-6 text-white" />
-            </div>
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
+          <p className="text-gray-600 mt-2">Sign in to your account</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter your email"
+            />
           </div>
-          <CardTitle className="text-2xl font-bold text-center">Welcome back</CardTitle>
-          <CardDescription className="text-center">Sign in to your account to continue</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={formik.handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  className="pl-10"
-                  {...formik.getFieldProps("email")}
-                />
-              </div>
-              {formik.touched.email && formik.errors.email && (
-                <p className="text-sm text-red-600">{formik.errors.email}</p>
-              )}
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  className="pl-10"
-                  {...formik.getFieldProps("password")}
-                />
-              </div>
-              {formik.touched.password && formik.errors.password && (
-                <p className="text-sm text-red-600">{formik.errors.password}</p>
-              )}
-            </div>
-
-            {!tenantSlug && (
-              <div className="space-y-2">
-                <Label htmlFor="company_slug">Company Slug</Label>
-                <div className="relative">
-                  <Building2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="company_slug"
-                    type="text"
-                    placeholder="Enter company slug"
-                    className="pl-10"
-                    {...formik.getFieldProps("company_slug")}
-                  />
-                </div>
-                {formik.touched.company_slug && formik.errors.company_slug && (
-                  <p className="text-sm text-red-600">{formik.errors.company_slug}</p>
-                )}
-              </div>
-            )}
-
-            <Button type="submit" className="w-full" disabled={isSubmitting || isLoading}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                "Sign in"
-              )}
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              {"Don't have an account? "}
-              <Link to="/register" className="text-blue-600 hover:underline font-medium">
-                Sign up
-              </Link>
-            </p>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter your password"
+            />
           </div>
-        </CardContent>
-      </Card>
+
+          <button
+            type="submit"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Sign In
+          </button>
+        </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{" "}
+            <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
+              Sign up
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   )
 }
