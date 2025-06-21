@@ -15,6 +15,10 @@ class Note extends Model
         'content',
         'user_id',
     ];
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 
     public function user()
     {
