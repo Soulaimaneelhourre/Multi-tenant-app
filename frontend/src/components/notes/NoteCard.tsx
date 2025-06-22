@@ -1,4 +1,7 @@
 import type { Note } from "../../types/note"
+import { Button } from "../ui/button"
+import { FiEdit2, FiTrash2 } from "react-icons/fi" // Feather icons, for example
+
 
 interface Props {
   note: Note
@@ -10,14 +13,40 @@ export default function NoteCard({ note, onDelete, onUpdate }: Props) {
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
       <h3 className="text-lg font-semibold text-gray-900 mb-2">{note.title}</h3>
-      <p className="text-gray-600 mb-4 break-words line-clamp-4 overflow-hidden" title={note.content}>
+      <p
+        className="text-gray-600 mb-4 break-words line-clamp-4 overflow-hidden"
+        title={note.content}
+      >
         {note.content}
       </p>
       <div className="flex justify-between items-center">
-        <span className="text-sm text-gray-500">{note.created_at}</span>
-        <div className="space-x-2">
-          <button onClick={() => onUpdate(note)} className="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
-          <button onClick={() => onDelete(note.id)} className="text-red-600 hover:text-red-800 text-sm">Delete</button>
+        <span className="text-sm text-gray-500">
+  {new Date(note.created_at).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  })}
+</span>
+
+        <div className="flex space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onUpdate(note)}
+            className="flex items-center space-x-1"
+          >
+            <FiEdit2 />
+            <span>Edit</span>
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => onDelete(note.id)}
+            className="flex items-center space-x-1 bg-red-500"
+          >
+            <FiTrash2 />
+            <span>Delete</span>
+          </Button>
         </div>
       </div>
     </div>

@@ -57,7 +57,8 @@ export default function EditNoteDialog({ open, note, onClose, onSave }: EditNote
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>Save</Button>
+            <Button onClick={handleSave}   className="bg-blue-500 text-white border border-blue-500 hover:bg-blue-600"
+>Save</Button>
           </div>
 
           <DialogPrimitive.Close />

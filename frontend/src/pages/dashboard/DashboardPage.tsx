@@ -4,6 +4,7 @@ import { useAppSelector, useAppDispatch } from "../../hooks/reduxHooks";
 import { selectToken, logout as logoutAction } from "../../store/authSlice";
 import { selectSelectedTenant } from "../../store/tenantSlice";
 import { useNavigate } from "react-router-dom";
+
 import {
   fetchNotes,
   deleteNote,
@@ -17,6 +18,7 @@ import { createNote } from "../../services/notesService";
 import { selectUser } from "../../store/authSlice"; // or wherever user data is stored
 
 import type { Note } from "../../types/note";
+import { Badge } from "lucide-react";
 
 export default function DashboardPage() {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -129,11 +131,23 @@ export default function DashboardPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {loading && <p>Loading notes...</p>}
+        {loading && (
+  <div className="flex flex-col items-center justify-center py-20 gap-4">
+    <div className="w-8 h-8 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+    <p className="text-gray-600 text-lg font-medium">Loading notes...</p>
+  </div>
+)}
         {error && <p className="text-red-600">{error}</p>}
-        {!loading && !error && (
+
+        {!loading && !error && notes.length === 0 && (
+          <div className="flex justify-center items-center py-20">
+            <p className="text-gray-600 text-lg font-medium">No notes available</p>
+          </div>
+        )}
+
+        {!loading && !error && notes.length > 0 && (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {notes.map((note) => (
+            {notes.map(note => (
               <NoteCard
                 key={note.id}
                 note={note}
