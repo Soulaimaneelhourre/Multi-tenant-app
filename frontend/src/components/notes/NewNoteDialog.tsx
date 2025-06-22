@@ -56,7 +56,7 @@ export default function NewNoteDialog({ open, onClose, onCreate }: NewNoteDialog
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button variant="secondary" onClick={handleCreate}>Create</Button>
+            <Button variant="default" className="bg-blue-500 text-white" onClick={handleCreate}>Create</Button>
           </div>
 
           <DialogPrimitive.Close />

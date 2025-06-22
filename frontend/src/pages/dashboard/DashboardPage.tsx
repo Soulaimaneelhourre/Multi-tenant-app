@@ -18,7 +18,6 @@ import { createNote } from "../../services/notesService";
 import { selectUser } from "../../store/authSlice"; // or wherever user data is stored
 
 import type { Note } from "../../types/note";
-import { Badge } from "lucide-react";
 
 export default function DashboardPage() {
   const [notes, setNotes] = useState<Note[]>([]);

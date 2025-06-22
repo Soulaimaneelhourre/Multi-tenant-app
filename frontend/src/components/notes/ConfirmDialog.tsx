@@ -25,7 +25,7 @@ export default function ConfirmDialog({ open, title, description, onCancel, onCo
             <Button variant="outline" onClick={onCancel}>
               Cancel
             </Button>
-            <Button   className="bg-gray-100 text-gray-800 border border-gray-300 hover:bg-gray-200"
+            <Button   className="bg-red-500 text-white-800 border border-gray-300 hover:bg-gray-200"
  onClick={onConfirm}>
               Confirm
             </Button>
