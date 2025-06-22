@@ -1,28 +1,52 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import { useFormik } from "formik"
-import * as Yup from "yup"
-import { useAuth } from "../../contexts/AuthContext"
+// pages/auth/RegisterPage.tsx
+import { useEffect } from "react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { Link, useNavigate } from "react-router-dom";
+import { useAppSelector, useAppDispatch } from "../../hooks/reduxHooks";
+import { fetchTenants, setSelectedTenant } from "../../store/tenantSlice";
+import { register, clearError } from "../../store/authSlice";
+import { CompanyDropdown } from "../../components/CompanyDropdown";
 
 const validationSchema = Yup.object({
   name: Yup.string().required("Name is required"),
-  email: Yup.string().email("Invalid email address").required("Email is required"),
-  password: Yup.string().min(8, "Password must be at least 8 characters").required("Password is required"),
+  email: Yup.string()
+    .email("Invalid email address")
+    .required("Email is required"),
+  password: Yup.string()
+    .min(8, "Password must be at least 8 characters")
+    .required("Password is required"),
   password_confirmation: Yup.string()
     .oneOf([Yup.ref("password")], "Passwords must match")
     .required("Password confirmation is required"),
-  company_name: Yup.string().required("Company name is required"),
-  company_slug: Yup.string()
-    .matches(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens")
-    .required("Company slug is required"),
-})
+  tenant_id: Yup.string().required("Please select a company"),
+});
 
 export default function RegisterPage() {
-  const { register, isAuthenticated, isLoading, error } = useAuth()
-  const navigate = useNavigate()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  const {
+    tenants,
+    selectedTenant,
+    loading: tenantsLoading,
+    error: tenantsError,
+  } = useAppSelector((state) => state.tenant);
+  
+  const {
+    loading: authLoading,
+    error: authError,
+  } = useAppSelector((state) => state.auth);
+
+  // Fetch tenants only once when component mounts
+  useEffect(() => {
+    dispatch(fetchTenants());
+  }, [dispatch]);
+
+  // Clear any previous auth errors when component mounts
+  useEffect(() => {
+    dispatch(clearError());
+  }, [dispatch]);
 
   const formik = useFormik({
     initialValues: {
@@ -30,35 +54,51 @@ export default function RegisterPage() {
       email: "",
       password: "",
       password_confirmation: "",
-      company_name: "",
-      company_slug: "",
+      tenant_id: "",
     },
     validationSchema,
     onSubmit: async (values) => {
+      if (!selectedTenant) return;
+
       try {
-        setIsSubmitting(true)
-        await register(values)
-        navigate("/dashboard")
+        await dispatch(
+          register({
+            userData: {
+              name: values.name,
+              email: values.email,
+              password: values.password,
+              password_confirmation: values.password_confirmation,
+              tenant_id: values.tenant_id,
+            },
+            domain: selectedTenant.domains[0]?.domain,
+          })
+        ).unwrap();
+
+        // Navigate to login page on successful registration
+        navigate("/login", { replace: true });
       } catch (error) {
-        // Error handled in context
-      } finally {
-        setIsSubmitting(false)
+        // Error is already handled by Redux state
+        console.error("Registration failed:", error);
       }
     },
-  })
+  });
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/dashboard")
-    }
-  }, [isAuthenticated, navigate])
+  const handleCompanySelect = (company: NonNullable<typeof selectedTenant>) => {
+    dispatch(setSelectedTenant(company));
+    formik.setFieldValue("tenant_id", company.id);
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <div className="text-center mb-8">
           <div className="h-12 w-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center mx-auto mb-4">
-            <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="h-6 w-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -71,223 +111,171 @@ export default function RegisterPage() {
           <p className="text-gray-600 mt-2">Set up your company workspace</p>
         </div>
 
-        {error && <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">{error}</div>}
+        {authError && (
+          <div className="bg-red-50 border border-red-200 text-red-600 text-sm p-3 rounded mb-4">
+            {authError}
+          </div>
+        )}
+
+        {tenantsError && (
+          <div className="bg-red-50 border border-red-200 text-red-600 text-sm p-3 rounded mb-4">
+            {tenantsError}
+          </div>
+        )}
 
         <form onSubmit={formik.handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Full Name
             </label>
-            <div className="relative mt-1">
-              <svg
-                className="absolute left-3 top-3 h-4 w-4 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
-              <input
-                id="name"
-                type="text"
-                placeholder="Enter your full name"
-                className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                {...formik.getFieldProps("name")}
-              />
-            </div>
+            <input
+              type="text"
+              id="name"
+              {...formik.getFieldProps("name")}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter your full name"
+            />
             {formik.touched.name && formik.errors.name && (
-              <p className="text-sm text-red-600 mt-1">{formik.errors.name}</p>
+              <div className="text-sm text-red-500 mt-1">
+                {formik.errors.name}
+              </div>
             )}
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Email
             </label>
-            <div className="relative mt-1">
-              <svg
-                className="absolute left-3 top-3 h-4 w-4 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
-                />
-              </svg>
-              <input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                {...formik.getFieldProps("email")}
-              />
-            </div>
+            <input
+              type="email"
+              id="email"
+              {...formik.getFieldProps("email")}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter your email"
+            />
             {formik.touched.email && formik.errors.email && (
-              <p className="text-sm text-red-600 mt-1">{formik.errors.email}</p>
+              <div className="text-sm text-red-500 mt-1">
+                {formik.errors.email}
+              </div>
             )}
           </div>
 
           <div>
-            <label htmlFor="company_name" className="block text-sm font-medium text-gray-700">
-              Company Name
+            <label
+              htmlFor="company"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Company
             </label>
-            <div className="relative mt-1">
-              <svg
-                className="absolute left-3 top-3 h-4 w-4 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                />
-              </svg>
-              <input
-                id="company_name"
-                type="text"
-                placeholder="Enter company name"
-                className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                {...formik.getFieldProps("company_name")}
-              />
-            </div>
-            {formik.touched.company_name && formik.errors.company_name && (
-              <p className="text-sm text-red-600 mt-1">{formik.errors.company_name}</p>
+            <CompanyDropdown
+              companies={tenants}
+              selectedCompany={selectedTenant}
+              onSelect={handleCompanySelect}
+              isLoading={tenantsLoading}
+              error={tenantsError}
+            />
+            {formik.touched.tenant_id && formik.errors.tenant_id && (
+              <div className="text-sm text-red-500 mt-1">
+                {formik.errors.tenant_id}
+              </div>
             )}
           </div>
 
           <div>
-            <label htmlFor="company_slug" className="block text-sm font-medium text-gray-700">
-              Company Slug
-            </label>
-            <div className="relative mt-1">
-              <svg
-                className="absolute left-3 top-3 h-4 w-4 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                />
-              </svg>
-              <input
-                id="company_slug"
-                type="text"
-                placeholder="company-slug"
-                className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                {...formik.getFieldProps("company_slug")}
-              />
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              This will be your subdomain: {formik.values.company_slug || "company-slug"}.localhost
-            </p>
-            {formik.touched.company_slug && formik.errors.company_slug && (
-              <p className="text-sm text-red-600 mt-1">{formik.errors.company_slug}</p>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Password
             </label>
-            <div className="relative mt-1">
-              <svg
-                className="absolute left-3 top-3 h-4 w-4 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                />
-              </svg>
-              <input
-                id="password"
-                type="password"
-                placeholder="Create a password"
-                className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                {...formik.getFieldProps("password")}
-              />
-            </div>
+            <input
+              type="password"
+              id="password"
+              {...formik.getFieldProps("password")}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Create a password"
+            />
             {formik.touched.password && formik.errors.password && (
-              <p className="text-sm text-red-600 mt-1">{formik.errors.password}</p>
+              <div className="text-sm text-red-500 mt-1">
+                {formik.errors.password}
+              </div>
             )}
           </div>
 
           <div>
-            <label htmlFor="password_confirmation" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="password_confirmation"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Confirm Password
             </label>
-            <div className="relative mt-1">
-              <svg
-                className="absolute left-3 top-3 h-4 w-4 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                />
-              </svg>
-              <input
-                id="password_confirmation"
-                type="password"
-                placeholder="Confirm your password"
-                className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                {...formik.getFieldProps("password_confirmation")}
-              />
-            </div>
+            <input
+              type="password"
+              id="password_confirmation"
+              {...formik.getFieldProps("password_confirmation")}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Confirm your password"
+            />
             {formik.touched.password_confirmation && formik.errors.password_confirmation && (
-              <p className="text-sm text-red-600 mt-1">{formik.errors.password_confirmation}</p>
+              <div className="text-sm text-red-500 mt-1">
+                {formik.errors.password_confirmation}
+              </div>
             )}
           </div>
 
           <button
             type="submit"
-            disabled={isSubmitting || isLoading}
-            className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={
+              !selectedTenant ||
+              tenantsLoading ||
+              authLoading ||
+              !formik.isValid
+            }
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+            {authLoading ? (
+              <span className="flex items-center justify-center">
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
                 Creating account...
-              </>
+              </span>
             ) : (
               "Create account"
             )}
           </button>
-        </form>
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
+          <p className="mt-4 text-center text-sm text-gray-600">
             Already have an account?{" "}
-            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link to="/login" className="text-blue-600 hover:underline">
               Sign in
             </Link>
           </p>
-        </div>
+        </form>
       </div>
     </div>
-  )
+  );
 }

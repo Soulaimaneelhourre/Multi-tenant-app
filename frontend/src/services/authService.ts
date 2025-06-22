@@ -1,7 +1,13 @@
 import { apiClient } from "./apiClient"
 import type { LoginCredentials, RegisterCredentials, AuthResponse, User } from "../types/auth"
 import axios from "axios";
-
+export interface RegisterData {
+  name: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+  company_token: string;
+}
 export const authService = {
   login: async (
     credentials: LoginCredentials,
@@ -16,9 +22,17 @@ export const authService = {
   },
 
 
-  async register(credentials: RegisterCredentials): Promise<AuthResponse> {
-    const response = await apiClient.post("/register", credentials)
-    return response.data
+  async register(userData: RegisterData, baseURL?: string): Promise<{ message: string }> {
+    const axiosInstance = axios.create({
+      baseURL: baseURL || process.env.REACT_APP_API_URL || 'http://localhost:8000',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    });
+
+    const response = await axiosInstance.post('/register', userData);
+    return response.data;
   },
 
   async getCurrentUser(): Promise<User> {

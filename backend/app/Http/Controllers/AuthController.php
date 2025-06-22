@@ -17,11 +17,13 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'tenant_id' => 'required|string|exists:tenants,id',
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'tenant_id' => $request->tenant_id,
             'password' => Hash::make($request->password),
         ]);
 
@@ -31,6 +33,7 @@ class AuthController extends Controller
             'user' => $user,
             'token' => $token,
             'token_type' => 'Bearer',
+            'tenant_id' => $user->tenant_id,
         ], 201);
     }
 

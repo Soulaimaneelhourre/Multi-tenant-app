@@ -1,7 +1,7 @@
 // store/authSlice.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { authService } from "../services/authService";
-import type { LoginCredentials, User } from "../types/auth";
+import type { LoginCredentials, User, RegisterData } from "../types/auth";
 import type { RootState } from "../store";
 
 interface AuthState {
@@ -59,6 +59,25 @@ export const login = createAsyncThunk<
   }
 });
 
+// Async thunk for register
+export const register = createAsyncThunk<
+  { message: string },
+  { userData: RegisterData; domain?: string },
+  { rejectValue: string }
+>("auth/register", async ({ userData, domain }, { rejectWithValue }) => {
+  try {
+    const baseURL = domain ? `http://${domain}:8000/` : undefined;
+    const response = await authService.register(userData, baseURL);
+    return response;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || 
+      error.response?.data?.errors || 
+      "Registration failed"
+    );
+  }
+});
+
 // Async thunk for logout
 export const logoutAsync = createAsyncThunk(
   "auth/logout",
@@ -99,6 +118,7 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Login cases
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -121,6 +141,24 @@ const authSlice = createSlice({
         state.user = null;
         state.token = null;
       })
+      // Register cases
+      .addCase(register.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(register.fulfilled, (state) => {
+        state.loading = false;
+        state.error = null;
+        // Don't set authenticated state for registration
+        // User will need to login after registration
+      })
+      .addCase(register.rejected, (state, action) => {
+        state.loading = false;
+        state.error = typeof action.payload === 'string' 
+          ? action.payload 
+          : "Registration failed";
+      })
+      // Logout cases
       .addCase(logoutAsync.fulfilled, (state) => {
         state.user = null;
         state.token = null;
