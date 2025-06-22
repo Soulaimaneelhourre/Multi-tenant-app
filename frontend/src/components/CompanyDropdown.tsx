@@ -45,7 +45,7 @@ export function CompanyDropdown({ companies, selectedCompany, onSelect, isLoadin
     return (
       <div className="relative">
         <div className="pl-10 block w-full px-3 py-2 border border-red-300 rounded-md shadow-sm bg-red-50 text-red-700">
-          Error loading companies
+          {error}
         </div>
       </div>
     )
@@ -57,6 +57,8 @@ export function CompanyDropdown({ companies, selectedCompany, onSelect, isLoadin
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="pl-10 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white text-left"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
       >
         <div className="flex items-center justify-between">
           <span className={selectedCompany ? "text-gray-900" : "text-gray-500"}>
@@ -67,6 +69,7 @@ export function CompanyDropdown({ companies, selectedCompany, onSelect, isLoadin
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
@@ -74,7 +77,10 @@ export function CompanyDropdown({ companies, selectedCompany, onSelect, isLoadin
       </button>
 
       {isOpen && (
-        <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none">
+        <div
+          className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none"
+          role="listbox"
+        >
           {companies.length === 0 ? (
             <div className="px-3 py-2 text-gray-500 text-sm">No companies available</div>
           ) : (
@@ -89,6 +95,8 @@ export function CompanyDropdown({ companies, selectedCompany, onSelect, isLoadin
                 className={`w-full text-left px-3 py-2 text-sm hover:bg-blue-50 hover:text-blue-900 ${
                   selectedCompany?.id === company.id ? "bg-blue-100 text-blue-900" : "text-gray-900"
                 }`}
+                role="option"
+                aria-selected={selectedCompany?.id === company.id}
               >
                 <div>
                   <div className="font-medium">{company.name}</div>

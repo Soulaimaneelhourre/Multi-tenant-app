@@ -3,7 +3,7 @@ import type { Company } from "../types/auth"
 
 export const companyService = {
   async getCompanies(): Promise<Company[]> {
-    const response = await apiClient.get("/companies")
+    const response = await apiClient.get("/tenants")
     return response.data
   },
 
