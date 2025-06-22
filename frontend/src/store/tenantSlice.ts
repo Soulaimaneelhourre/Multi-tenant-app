@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { companyService } from '../services/companyService';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { Domain, Tenant } from '../types/auth';
+import type { RootState } from '.';
 
 interface TenantState {
   tenants: Tenant[];
@@ -52,4 +53,6 @@ const tenantSlice = createSlice({
 });
 
 export const { setSelectedTenant, clearSelectedTenant } = tenantSlice.actions;
+export const selectSelectedTenant = (state: RootState) => state.tenant.selectedTenant;
+
 export default tenantSlice.reducer;
