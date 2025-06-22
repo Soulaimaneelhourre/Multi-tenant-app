@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import type { Company } from "../types/auth"
+import type { Tenant } from "../types/auth"
 
 interface CompanyDropdownProps {
-  companies: Company[]
-  selectedCompany: Company | null
-  onSelect: (company: Company) => void
+  companies: Tenant[];
+  selectedCompany: Tenant | null;
+  onSelect: (company: Tenant) => void;
   isLoading?: boolean
   error?: string | null
 }
@@ -62,7 +62,7 @@ export function CompanyDropdown({ companies, selectedCompany, onSelect, isLoadin
       >
         <div className="flex items-center justify-between">
           <span className={selectedCompany ? "text-gray-900" : "text-gray-500"}>
-            {selectedCompany ? selectedCompany.name : "Select a company"}
+            {selectedCompany ? selectedCompany.id : "Select a company"}
           </span>
           <svg
             className={`h-4 w-4 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
@@ -99,8 +99,8 @@ export function CompanyDropdown({ companies, selectedCompany, onSelect, isLoadin
                 aria-selected={selectedCompany?.id === company.id}
               >
                 <div>
-                  <div className="font-medium">{company.name}</div>
-                  <div className="text-xs text-gray-500">{company.slug}</div>
+                  <div className="font-medium">{company.id}</div>
+                  <div className="text-xs text-gray-500">{company.id}</div>
                 </div>
               </button>
             ))

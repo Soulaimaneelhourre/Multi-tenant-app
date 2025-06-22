@@ -8,6 +8,6 @@ Route::get('/', function () {
 });
 Route::get('/tenants', function () {
     return response()->json(
-        Tenant::select('id')->get()
+        Tenant::with('domains')->get(['id'])  // eager load domains relation
     );
 });

@@ -1,15 +1,11 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { companyService } from '../services/companyService';
 import type { PayloadAction } from '@reduxjs/toolkit';
-
-interface Tenant {
-  id: string;
-  domain: string;
-  name: string;
-}
+import type { Domain, Tenant } from '../types/auth';
 
 interface TenantState {
   tenants: Tenant[];
-  selectedTenant: string | null; // domain or id of tenant
+  selectedTenant: Tenant | null;
   loading: boolean;
   error: string | null;
 }
@@ -21,39 +17,39 @@ const initialState: TenantState = {
   error: null,
 };
 
+// Async thunk to fetch tenants
+export const fetchTenants = createAsyncThunk('tenant/fetchTenants', async () => {
+  const data = await companyService.getCompanies();
+  return data as Tenant[];
+});
+
 const tenantSlice = createSlice({
   name: 'tenant',
   initialState,
   reducers: {
-    fetchTenantsStart(state) {
-      state.loading = true;
-      state.error = null;
-    },
-    fetchTenantsSuccess(state, action: PayloadAction<Tenant[]>) {
-      state.tenants = action.payload;
-      state.loading = false;
-    },
-    fetchTenantsFailure(state, action: PayloadAction<string>) {
-      state.loading = false;
-      state.error = action.payload;
-    },
-    setSelectedTenant(state, action: PayloadAction<string>) {
+    setSelectedTenant(state, action: PayloadAction<Tenant>) {
       state.selectedTenant = action.payload;
     },
     clearSelectedTenant(state) {
       state.selectedTenant = null;
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchTenants.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTenants.fulfilled, (state, action) => {
+        state.tenants = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchTenants.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch tenants';
+      });
+  },
 });
 
-// Export actions
-export const {
-  fetchTenantsStart,
-  fetchTenantsSuccess,
-  fetchTenantsFailure,
-  setSelectedTenant,
-  clearSelectedTenant,
-} = tenantSlice.actions;
-
-// Export reducer as default export
+export const { setSelectedTenant, clearSelectedTenant } = tenantSlice.actions;
 export default tenantSlice.reducer;

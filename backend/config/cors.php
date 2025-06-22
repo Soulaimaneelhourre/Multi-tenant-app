@@ -1,6 +1,7 @@
 <?php
+
 return [
-    'paths' => ['api/*', 'sanctum/csrf-cookie', 'tenants', 'tenants/*'], // add all API paths you call
+    'paths' => ['api/*', 'login', 'logout', 'tenants', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
 
@@ -14,5 +15,5 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => true, // if you use cookies/auth
+    'supports_credentials' => true, // Important if you're using Sanctum or cookies
 ];

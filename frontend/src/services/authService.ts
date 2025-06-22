@@ -1,11 +1,20 @@
 import { apiClient } from "./apiClient"
 import type { LoginCredentials, RegisterCredentials, AuthResponse, User } from "../types/auth"
+import axios from "axios";
 
 export const authService = {
-  async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await apiClient.post("/login", credentials)
-    return response.data
+  login: async (
+    credentials: LoginCredentials,
+    baseURL?: string
+  ): Promise<{ user: User; token: string }> => {
+    const api = axios.create({
+      baseURL: baseURL || 'http://localhost:3000/api', // fallback to default
+    });
+
+    const response = await api.post('/login', credentials);
+    return response.data;
   },
+
 
   async register(credentials: RegisterCredentials): Promise<AuthResponse> {
     const response = await apiClient.post("/register", credentials)

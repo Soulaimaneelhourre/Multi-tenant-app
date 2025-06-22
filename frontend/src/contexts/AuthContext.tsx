@@ -1,101 +1,77 @@
-"use client"
-
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { authService } from "../services/authService"
-import type { User, LoginCredentials, RegisterCredentials } from "../types/auth"
+import React, { createContext, useContext, useEffect } from 'react';
+import type { ReactNode } from 'react';
+import { useAppSelector, useAppDispatch } from '../hooks/reduxHooks';
+import { selectAuth } from '../store/authSlice';
 
 interface AuthContextType {
-  user: User | null
-  isLoading: boolean
-  isAuthenticated: boolean
-  login: (credentials: LoginCredentials) => Promise<void>
-  register: (credentials: RegisterCredentials) => Promise<void>
-  logout: () => void
-  error: string | null
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  user: any | null;
+  token: string | null;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType>({
+  isAuthenticated: false,
+  isLoading: true,
+  user: null,
+  token: null,
+});
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const dispatch = useAppDispatch();
+  const { isAuthenticated, loading, user, token } = useAppSelector(selectAuth);
+
+  // Initialize auth state from localStorage on app start
   useEffect(() => {
-    const initAuth = async () => {
+    const storedToken = localStorage.getItem('authToken');
+    const storedUser = localStorage.getItem('authUser');
+    
+    if (storedToken && storedUser) {
       try {
-        const token = localStorage.getItem("auth_token")
-        if (token) {
-          const userData = await authService.getCurrentUser()
-          setUser(userData)
-        }
+        const parsedUser = JSON.parse(storedUser);
+        // You might want to dispatch an action to restore the auth state
+        // dispatch(restoreAuthState({ token: storedToken, user: parsedUser }));
       } catch (error) {
-        localStorage.removeItem("auth_token")
-      } finally {
-        setIsLoading(false)
+        // Clear invalid stored data
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('authUser');
       }
     }
+  }, [dispatch]);
 
-    initAuth()
-  }, [])
-
-  const login = async (credentials: LoginCredentials) => {
-    try {
-      setIsLoading(true)
-      setError(null)
-      const response = await authService.login(credentials)
-      localStorage.setItem("auth_token", response.token)
-      setUser(response.user)
-    } catch (error: any) {
-      setError(error.response?.data?.message || "Login failed")
-      throw error
-    } finally {
-      setIsLoading(false)
+  // Persist auth state to localStorage when it changes
+  useEffect(() => {
+    if (token && user) {
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('authUser', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('authUser');
     }
-  }
+  }, [token, user]);
 
-  const register = async (credentials: RegisterCredentials) => {
-    try {
-      setIsLoading(true)
-      setError(null)
-      const response = await authService.register(credentials)
-      localStorage.setItem("auth_token", response.token)
-      setUser(response.user)
-    } catch (error: any) {
-      setError(error.response?.data?.message || "Registration failed")
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const logout = () => {
-    localStorage.removeItem("auth_token")
-    setUser(null)
-    setError(null)
-  }
+  const value: AuthContextType = {
+    isAuthenticated,
+    isLoading: loading,
+    user,
+    token,
+  };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        isAuthenticated: !!user,
-        login,
-        register,
-        logout,
-        error,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
-  )
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
-  }
-  return context
-}
+  );
+};
