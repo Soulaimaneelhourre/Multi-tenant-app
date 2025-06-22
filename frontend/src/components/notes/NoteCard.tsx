@@ -1,75 +1,25 @@
-"use client"
+import type { Note } from "../../types/note"
 
-import type { Note } from "@/types/note"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Edit, Trash2, User } from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
-
-interface NoteCardProps {
+interface Props {
   note: Note
-  onEdit: () => void
-  onDelete: () => void
+  onDelete: (id: number) => void
+  onUpdate: (note: Note) => void
 }
 
-export function NoteCard({ note, onEdit, onDelete }: NoteCardProps) {
+export default function NoteCard({ note, onDelete, onUpdate }: Props) {
   return (
-    <Card className="group hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <h3 className="font-semibold line-clamp-2 group-hover:text-blue-600 transition-colors">{note.title}</h3>
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button variant="ghost" size="sm" onClick={onEdit} className="h-8 w-8 p-0">
-              <Edit className="h-4 w-4" />
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-600 hover:text-red-700">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Note</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete "{note.title}"? This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={onDelete} className="bg-red-600 hover:bg-red-700">
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+    <div className="bg-white p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">{note.title}</h3>
+      <p className="text-gray-600 mb-4 break-words line-clamp-4 overflow-hidden" title={note.content}>
+        {note.content}
+      </p>
+      <div className="flex justify-between items-center">
+        <span className="text-sm text-gray-500">{note.created_at}</span>
+        <div className="space-x-2">
+          <button onClick={() => onUpdate(note)} className="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
+          <button onClick={() => onDelete(note.id)} className="text-red-600 hover:text-red-800 text-sm">Delete</button>
         </div>
-      </CardHeader>
-      <CardContent className="pb-3">
-        <p className="text-sm text-muted-foreground line-clamp-3">{note.content}</p>
-      </CardContent>
-      <CardFooter className="pt-3 border-t flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <User className="h-3 w-3 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">{note.user.name}</span>
-        </div>
-        <Badge variant="secondary" className="text-xs">
-          {formatDistanceToNow(new Date(note.created_at), { addSuffix: true })}
-        </Badge>
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   )
 }
