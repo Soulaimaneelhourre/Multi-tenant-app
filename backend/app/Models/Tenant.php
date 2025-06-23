@@ -14,8 +14,6 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     // You can add custom attributes if needed
     protected $fillable = [
         'id',
-        'name',
-        'email',
         'data',
     ];
 
@@ -23,8 +21,6 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     {
         return [
             'id',
-            'name', 
-            'email',
         ];
     }
 }

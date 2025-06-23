@@ -4,10 +4,7 @@ export interface Note {
   content: string
   created_at: string
   updated_at: string
-  user: {
-    id: number
-    name: string
-  }
+  user_id: number
 }
 
 export interface CreateNoteData {

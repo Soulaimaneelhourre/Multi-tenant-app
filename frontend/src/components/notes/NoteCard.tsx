@@ -1,6 +1,8 @@
+import { useAppSelector } from "../../hooks/reduxHooks"
 import type { Note } from "../../types/note"
 import { Button } from "../ui/button"
 import { FiEdit2, FiTrash2 } from "react-icons/fi" // Feather icons, for example
+import { selectUser } from "../../store/authSlice"; // or wherever user data is stored
 
 
 interface Props {
@@ -10,6 +12,7 @@ interface Props {
 }
 
 export default function NoteCard({ note, onDelete, onUpdate }: Props) {
+  const user = useAppSelector(selectUser);
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
       <h3 className="text-lg font-semibold text-gray-900 mb-2">{note.title}</h3>
@@ -27,7 +30,7 @@ export default function NoteCard({ note, onDelete, onUpdate }: Props) {
     day: "numeric",
   })}
 </span>
-
+{ user && user.id === note.user_id && (
         <div className="flex space-x-2">
           <Button
             variant="outline"
@@ -47,7 +50,7 @@ export default function NoteCard({ note, onDelete, onUpdate }: Props) {
             <FiTrash2 />
             <span>Delete</span>
           </Button>
-        </div>
+        </div>)}
       </div>
     </div>
   )

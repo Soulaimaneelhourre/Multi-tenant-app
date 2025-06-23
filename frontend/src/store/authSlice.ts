@@ -10,6 +10,8 @@ interface AuthState {
   loading: boolean;
   error: string | null;
   isAuthenticated: boolean;
+  success: string | null;
+
 }
 
 // Helper function to get initial state from localStorage
@@ -25,6 +27,8 @@ const getInitialState = (): AuthState => {
         loading: false,
         error: null,
         isAuthenticated: true,
+        success: null,
+
       };
     }
   } catch (error) {
@@ -39,6 +43,7 @@ const getInitialState = (): AuthState => {
     loading: false,
     error: null,
     isAuthenticated: false,
+    success: null,
   };
 };
 
@@ -78,6 +83,23 @@ export const register = createAsyncThunk<
   }
 });
 
+export const createCompany = createAsyncThunk<
+  { message: string },
+  { company_name: string; domain: string },
+  { rejectValue: string }
+>("auth/createCompany", async ({ company_name, domain }, { rejectWithValue }) => {
+  try {
+    const response = await authService.createCompany(company_name, domain);
+    console.log("Company created successfully:", response);
+    return response;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || 
+      error.response?.data?.errors || 
+      "Company registration failed"
+    );
+  }
+});
 // Async thunk for logout
 export const logoutAsync = createAsyncThunk(
   "auth/logout",

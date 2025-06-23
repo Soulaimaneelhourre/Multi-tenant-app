@@ -213,6 +213,12 @@ export default function LoginPage() {
                 Register here
               </Link>
             </p>
+            <p className="mt-2 text-center text-sm text-gray-600">
+  Want to register a company?{" "}
+  <Link to="/register-company" className="text-blue-600 hover:underline">
+    Register here
+  </Link>
+</p>
         </form>
       </div>
     </div>

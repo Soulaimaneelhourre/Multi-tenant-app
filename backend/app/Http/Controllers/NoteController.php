@@ -9,7 +9,8 @@ class NoteController extends Controller
 {
     public function index(Request $request)
     {
-        $notes = $request->user()->notes()
+        // Get all notes from the current tenant (not just user's notes)
+        $notes = Note::with('user') // Include user info if needed
             ->orderBy('created_at', 'desc')
             ->get();
 
