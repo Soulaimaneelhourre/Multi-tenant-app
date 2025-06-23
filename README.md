@@ -9,6 +9,7 @@ This is a multi-tenant Notes application built with Laravel (backend) and React.
 - **Authentication**: Laravel Sanctum
 - **Multi-Tenancy**: stancl/tenancy package
 - **Styling**: Tailwind CSS
+- **State management**: Redux , redux Persist
 - **Form Handling**: Formik
 - **HTTP Client**: Axios
 
@@ -69,41 +70,11 @@ npm install
 cp .env.example .env
 ```
 
-### 4. Configure Hosts
-Add these lines to your `/etc/hosts` file (Linux/Mac) or `C:\Windows\System32\drivers\etc\hosts` (Windows):
-```
-127.0.0.1       tenant-notes.test
-127.0.0.1       company1.tenant-notes.test
-127.0.0.1       company2.tenant-notes.test
-```
 
-### 5. Configure .env
-Backend `.env`:
-```
-APP_URL=http://tenant-notes.test
-SANCTUM_STATEFUL_DOMAINS=tenant-notes.test,*.tenant-notes.test
-SESSION_DOMAIN=.tenant-notes.test
-```
-
-Frontend `.env`:
-```
-VITE_API_URL=http://tenant-notes.test
-```
-
-### 6. Run the Application
-```bash
-# In the backend directory
-php artisan serve --host=tenant-notes.test --port=8000
 
 # In the frontend directory
 npm run dev
 ```
-
-## 🔍 Testing the Application
-1. Access the main domain: http://tenant-notes.test:8000
-2. Register a new company (this will create a tenant)
-3. Log in with the created user
-4. Access via subdomain: http://company1.tenant-notes.test:8000
 
 ## 🧪 Seeding Test Data
 ```bash
