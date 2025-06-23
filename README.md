@@ -2,6 +2,14 @@
 
 ## 📝 Overview
 This is a multi-tenant Notes application built with Laravel (backend) and React.js (frontend) that supports tenant-based data isolation using subdomains. Each company (tenant) can register and have their own isolated data space where their users can create and manage notes.
+## SCREENSHOTS
+![image](https://github.com/user-attachments/assets/82f9b6c6-194b-4454-80fb-5c82d873dda2)
+![image](https://github.com/user-attachments/assets/a71f3854-bd0c-440f-91c2-edf7404aab12)
+![image](https://github.com/user-attachments/assets/b0044bd5-2426-4d9b-94ea-e3945739579f)
+![image](https://github.com/user-attachments/assets/737bc7a2-f570-415c-add9-17b998835146)
+![image](https://github.com/user-attachments/assets/2b66d445-6085-49ef-986a-80d995c4668c)
+![image](https://github.com/user-attachments/assets/d84b9218-c9a7-4fe4-9dcb-0729b6d8d140)
+![image](https://github.com/user-attachments/assets/56a71555-d2ac-48d1-ab09-196818e9a980)
 
 ## 🛠️ Tech Stack
 - **Backend**: Laravel 10
