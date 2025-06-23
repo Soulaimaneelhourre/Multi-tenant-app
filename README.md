@@ -10,6 +10,9 @@ This is a multi-tenant Notes application built with Laravel (backend) and React.
 ![image](https://github.com/user-attachments/assets/2b66d445-6085-49ef-986a-80d995c4668c)
 ![image](https://github.com/user-attachments/assets/d84b9218-c9a7-4fe4-9dcb-0729b6d8d140)
 ![image](https://github.com/user-attachments/assets/56a71555-d2ac-48d1-ab09-196818e9a980)
+![image](https://github.com/user-attachments/assets/ab378907-cc15-4cd3-95d3-f05a10f6f340)
+
+[66352ed1-89b0-494f-ab92-0e15b5967c06.webm](https://github.com/user-attachments/assets/73d3c0d0-917e-41bd-bd2a-6dc7c8562641)
 
 ## 🛠️ Tech Stack
 - **Backend**: Laravel 10
